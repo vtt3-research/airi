@@ -3,10 +3,6 @@ This is an unofficial Tensorflow implementation for Image Captioning model propo
 
 <br/>
 
-![alt text](jpg/attention_over_time.jpg "soft attention")
-
-<br/>
-
 ## Requirements
 * Python 2.7 or 3.5
 * Tensorflow 1.2.1
@@ -55,9 +51,9 @@ If you want to run the full process, you can add the Bottom-Up Attention Model p
 The quantitative and qualitative evaluation of this code is as follows:
 
 ### data for testing in MSCOCO 2014 val images.
+
 ![alt text](jpg/result1.jpg "test image")
 
-### data for Internet news image
 ![alt text](jpg/result2.jpg "test image")
 
 ### evaluation
