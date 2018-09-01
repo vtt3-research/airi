@@ -6,6 +6,7 @@ This repo implement the code for video captioning, based on the paper ["Joint Lo
 ## Requirements
 
 Python 2.7
+
 PyTorch 0.4.0
 
 
