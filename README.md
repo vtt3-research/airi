@@ -22,6 +22,7 @@ When you download all datasets, put activity_net.v1-3.min.json file in the folde
 
 Finally, the files are organized as follows.
 
+```
 data/
 -- actnet/
 ---- sub_activitynet_v1-3.c3d.hdf5
@@ -33,11 +34,11 @@ data/
 ---- val_2.json
 ---- val_ids.json
 -- activit_net.v1-3.min.json
-
+```
 
 ## Training
 
-1. Preprocessing
+### Preprocessing
 
 Before training the model, you need to preprocess the dataset.
 
@@ -49,13 +50,13 @@ python prepro_caps.py
 The first is the dataset preprocessing for attribute detector.
 The second is the dataset preprocessing used to train the sentence generator and dense video captioning.
 
-2. Training for attribute detector
+### Training for attribute detector
 
 ```
 python run_detector.py
 ```
 
-3. Training for sentence generator
+### Training for sentence generator
 
 Use the weight of the attribute detector trained in the previous step.
 
@@ -63,7 +64,7 @@ Use the weight of the attribute detector trained in the previous step.
 python run_sent_gen.py --resume-att {attribute detector weight file}
 ```
 
-4. Training for dense video captioning
+### Training for dense video captioning
 
 Use the weight of the attribute detector and sentence generator trained in the previous step.
 
