@@ -1,6 +1,7 @@
-data/*
-log/*
-models/*
-output
-.pyc
 .idea
+data
+log
+models
+output
+
+*.pyc

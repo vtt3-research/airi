@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 import time
 import shutil
 import argparse
@@ -18,7 +19,10 @@ from torch.autograd import Variable
 from data_manager import ActivityNetSG
 from model import build_sg_model
 from rewards import init_eval_metric, compute_meteor_score
-from utils_eval import idx_to_sent
+from utils import idx_to_sent
+
+sys.path.insert(0, './densevid_eval')
+from evaluate import ANETcaptions
 
 parser = argparse.ArgumentParser(description='Sentence Generation')
 
@@ -31,11 +35,11 @@ parser.add_argument('--word-to-idx', type=str, default='sg_word_to_idx.json')
 parser.add_argument('--file-name', type=str, default='sg01')
 
 # Model settings
-parser.add_argument('--resume-att', type=str, default='./models/detector/layer2_dim1024_lr0.0001_best.pth.tar')
+parser.add_argument('--resume-att', type=str, default='./models/att01_epoch10.pth.tar')
 parser.add_argument('--resume-sg', type=str, default=None)
 parser.add_argument('-j', '--workers', type=int, default=4)
 parser.add_argument('--start-epoch', type=int, default=0)
-parser.add_argument('--epochs', type=int, default=50)
+parser.add_argument('--epochs', type=int, default=20)
 parser.add_argument('--batch-size', type=int, default=50)
 parser.add_argument('--optim', type=str, default='adam', help='choice optimizer (adam or sgd)')
 parser.add_argument('--lr', type=float, default=0.00005)
@@ -81,7 +85,7 @@ def main():
     print("USE GPU: {}".format(args.use_gpu))
 
     # Data loader
-    train_dataset = ActivityNetSG(args.root, args.train_file, args.word_to_idx)
+    train_dataset = ActivityNetSG(args.root, args.train_file, word_to_idx=args.word_to_idx)
     train_loader = DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True, drop_last=True
@@ -142,6 +146,8 @@ def main():
             args.feature_dim, args.num_class, args.embedding_dim, args.hidden_dim
             )
     text = '='*40 + text + '='*40 + '\n'
+    if not os.path.isdir('./log'):
+        os.makedirs('./log')
     with open('./log/' + args.file_name + '.txt', 'w') as f:
         print(text, file=f)
     print(text)
@@ -303,7 +309,6 @@ def evaluate_gt(val_loader, model_att, model_sg, criterion, idx_to_word, epoch=0
 
     count = 0
     losses = 0.0
-    out1 = {}
     out2 = {}
     out2['version'] = 'VERSION 1.0'
     out2['results'] = {}
@@ -334,14 +339,11 @@ def evaluate_gt(val_loader, model_att, model_sg, criterion, idx_to_word, epoch=0
             end_times = timestamp[:, 1].data.cpu().numpy()
 
             for i in range(len(gen_sents)):
-                if not v_name[i] in out1:
-                    out1[v_name[i]] = []
                 if not v_name[i] in out2['results']:
                     out2['results'][v_name[i]] = []
                 temp = {}
                 temp['sentence'] = gen_sents[i][0]
                 temp['timestamp'] = [float(start_times[i]), float(end_times[i])]
-                out1[v_name[i]].append(temp)
                 out2['results'][v_name[i]].append(temp)
                 count += 1
 
@@ -351,16 +353,18 @@ def evaluate_gt(val_loader, model_att, model_sg, criterion, idx_to_word, epoch=0
     print("Validation average loss : {:.4f}".format(avg_loss))
 
     # Write to JSON
+    if not os.path.isdir('./output'):
+        os.makedirs('./output')
     json_name = 'output/result_{}_{}.json'.format(args.file_name, str(epoch))
     json.dump(out2, open(json_name, 'w'))
 
     # Evaluate scores
     scores = {}
     evaluator = ANETcaptions(ground_truth_filenames=args.references,
-                             prediction=out1,
+                             prediction_filename=json_name,
                              tious=args.tious,
                              max_proposals=args.max_proposals_per_video,
-                             verbose=False)
+                             verbose=True)
     evaluator.evaluate()
     print("Validation Scores")
     for metric in evaluator.scores:
