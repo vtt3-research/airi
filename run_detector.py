@@ -30,7 +30,7 @@ parser.add_argument('--file-name', type=str, default='att01')
 parser.add_argument('--resume', type=str, default=None)
 parser.add_argument('-j', '--workers', type=int, default=4)
 parser.add_argument('--start-epoch', type=int, default=0)
-parser.add_argument('--epochs', type=int, default=50)
+parser.add_argument('--epochs', type=int, default=10)
 parser.add_argument('--batch-size', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.0001)
 parser.add_argument('--momentum', type=float, default=0.9)
@@ -42,7 +42,7 @@ parser.add_argument('--num-class', type=int, default=200)
 
 parser.add_argument('--print-freq', type=int, default=100)
 parser.add_argument('--seed', type=int, default=1)
-parser.add_argument('--use-gpu', action='store_true', help='use gpu (default: False)')
+parser.add_argument('--use-gpu', action='store_false', help='use gpu (default: True)')
 parser.add_argument('--validation', action='store_true',
                     help='if True only validation else training and validation mode (default: False)')
 parser.add_argument('--save-every', action='store_false',
@@ -100,6 +100,8 @@ def main():
             args.feature_dim, args.num_class
             )
     text = '='*40 + text + '='*40 + '\n'
+    if not os.path.isdir('./log'):
+        os.makedirs('./log')
     with open('./log/' + args.file_name + '.txt', 'w') as f:
         print(text, file=f)
     print(text)
