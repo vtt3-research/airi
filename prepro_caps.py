@@ -288,8 +288,8 @@ def parse_arguments(argv):
                         help='output file with validation video data (json file)')
 
     # Parameters
-    parser.add_argument('--max_len', default=2, type=int, help='max length of a caption')
-    parser.add_argument('--word_count_threshold', default=3, type=int,
+    parser.add_argument('--max_len', default=25, type=int, help='max length of a caption')
+    parser.add_argument('--word_count_threshold', default=1, type=int,
                         help='words that do not occur at least this number, filtering in vocabulary')
     return parser.parse_args(argv)
 
