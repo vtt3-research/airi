@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 import time
 import shutil
 import argparse
@@ -19,6 +20,10 @@ from loss import DVCLoss
 from rewards import init_eval_metric, get_sc_reward, compute_meteor_score, expand_reward
 from utils import clip_des_score, get_gt_proposal, idx_to_sent
 
+sys.path.insert(0, './densevid_eval')
+from evaluate import ANETcaptions
+
+
 parser = argparse.ArgumentParser(description='Dense Video Captioning')
 
 # Data input settings
@@ -30,12 +35,12 @@ parser.add_argument('--train-vec', type=str, default='caps_train_vecs.hdf5')
 parser.add_argument('--val-data', type=str, default='caps_val.json')
 parser.add_argument('--val-ids', type=str, default='caps_val_ids.json')
 parser.add_argument('--val-vec', type=str, default='caps_val_vecs.hdf5')
-parser.add_argument('--file-name', type=str, default='dvc_temp')
+parser.add_argument('--file-name', type=str, default='dvc01')
 
 # Model settings
-parser.add_argument('--resume-att', type=str, default='./models/detector/layer2_dim1024_lr0.0001_best.pth.tar')
-parser.add_argument('--resume-sg', type=str, default='./sg01_epoch40.pth.tar')
-parser.add_argument('--resume-dvc-xe', type=str, default='./dvc_xe04_epoch10.pth.tar')
+parser.add_argument('--resume-att', type=str, default='./models/att01_epoch10.pth.tar')
+parser.add_argument('--resume-sg', type=str, default='./models/sg01_epoch10.pth.tar')
+parser.add_argument('--resume-dvc-xe', type=str, default=None)
 parser.add_argument('--resume', type=str, default=None)
 parser.add_argument('-j', '--workers', type=int, default=1)
 parser.add_argument('--start-epoch', type=int, default=0)
@@ -74,7 +79,7 @@ parser.add_argument('--evaluate', action='store_false',
                     help='If True validation using ground-truth proposals mode (default: True)')
 parser.add_argument('--save-every', action='store_false',
                     help='If True, save weight per every step (default: True)')
-parser.add_argument('--rl-flag', action='store_false',
+parser.add_argument('--rl-flag', action='store_true',
                     help='If True Reinforce learning else Cross entropy learning')
 parser.add_argument('--gpu-devices', type=str, default='0')
 
@@ -443,13 +448,12 @@ def evaluate_gt_proposal(val_loader, model_att, model_tep, model_sg, idx_to_word
     model_tep.eval()
     model_sg.eval()
 
-    out1 = {}
-    out2 = {}
-    out2['version'] = 'VERSION 1.0'
-    out2['results'] = {}
-    out2['external_data'] = {}
-    out2['external_data']['used'] = 'false'
-    out2['external_data']['details'] = 'for evaluation'
+    out = {}
+    out['version'] = 'VERSION 1.0'
+    out['results'] = {}
+    out['external_data'] = {}
+    out['external_data']['used'] = 'false'
+    out['external_data']['details'] = 'for evaluation'
     end = time.time()
 
     with torch.no_grad():
@@ -491,14 +495,12 @@ def evaluate_gt_proposal(val_loader, model_att, model_tep, model_sg, idx_to_word
             start_times = timestamp[0, :, 0].data.cpu().numpy()
             end_times = timestamp[0, :, 1].data.cpu().numpy()
 
-            out1[v_name[0]] = []
-            out2['results'][v_name[0]] = []
+            out['results'][v_name[0]] = []
             for i in range(len(gen_sents)):
                 temp = {}
                 temp['sentence'] = gen_sents[i][0]
                 temp['timestamp'] = [float(start_times[i]), float(end_times[i])]
-                out1[v_name[0]].append(temp)
-                out2['results'][v_name[0]].append(temp)
+                out['results'][v_name[0]].append(temp)
 
             # Print
             if (batch_idx + 1) % args.print_freq == 0:
@@ -507,15 +509,18 @@ def evaluate_gt_proposal(val_loader, model_att, model_tep, model_sg, idx_to_word
                         (batch_idx + 1), len(val_loader), time.time() - end))
 
     # Write to JSON
+    if not os.path.isdir('./output'):
+        os.makedirs('./output')
     json_name = 'output/result_{}_{}.json'.format(args.file_name, str(epoch))
-    json.dump(out2, open(json_name, 'w'))
+    json.dump(out, open(json_name, 'w'))
 
+    # Evaluate scores
     scores = {}
     evaluator = ANETcaptions(ground_truth_filenames=args.references,
-                             prediction=out1,
+                             prediction_filename=json_name,
                              tious=args.tious,
                              max_proposals=args.max_proposals_per_video,
-                             verbose=False)
+                             verbose=True)
     evaluator.evaluate()
     print("Validation Scores")
     for metric in evaluator.scores:
