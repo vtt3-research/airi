@@ -1,0 +1,7 @@
+.idea
+data
+log
+models
+output
+
+*.pyc
