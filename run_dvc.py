@@ -419,8 +419,7 @@ def validate(val_loader, model_att, model_tep, model_sg):
             if args.use_gpu:
                 pos_feats = pos_feats.cuda()
             pos_feats = Variable(pos_feats)
-            with torch.no_grad():
-                att = model_att(pos_feats)
+            att = model_att(pos_feats)
             att = Variable(att)
             gen_result, _ = model_sg.sample(pos_feats, att, greedy=True)
 
