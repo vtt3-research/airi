@@ -531,12 +531,15 @@ def evaluate_gt_proposal(val_loader, model_att, model_tep, model_sg, idx_to_word
 
 
 def save_checkpoint(state, is_best, epoch, filename='checkpoint', save_every=False):
+    if not os.path.isdir('./models'):
+        os.makedirs('./models')
     if save_every:
-        torch.save(state, '{}_epoch{}.pth.tar'.format(filename, epoch))
+        torch.save(state, './models/{}_epoch{}.pth.tar'.format(filename, epoch))
     else:
-        torch.save(state, '{}.pth.tar'.format(filename))
+        torch.save(state, './models/{}.pth.tar'.format(filename))
         if is_best:
-            shutil.copyfile('{}.pth.tar'.format(filename), '{}_best.pth.tar'.format(filename))
+            shutil.copyfile('./models/{}.pth.tar'.format(filename),
+                            './models/{}_best.pth.tar'.format(filename))
 
 
 if __name__ == '__main__':
