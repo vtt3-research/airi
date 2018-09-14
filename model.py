@@ -118,12 +118,20 @@ class DVCTEP(nn.Module):
         des = torch.cat([o for o in des], 1)
         cls = torch.cat([o for o in cls], 1)
 
-        output = (
-            loc.view(loc.size(0), -1, 2),
-            des.view(des.size(0), -1, 1),
-            cls.view(cls.size(0), -1, 2),
-            temporal_dims
-        )
+        if self.training:
+            output = (
+                loc.view(loc.size(0), -1, 2),
+                des.view(des.size(0), -1, 1),
+                cls.view(cls.size(0), -1, 2),
+                temporal_dims
+            )
+        else:
+            output = (
+                loc.view(loc.size(0), -1, 2),
+                des.view(des.size(0), -1, 1),
+                F.softmax(cls.view(cls.size(0), -1, 2), dim=2),
+                temporal_dims
+            )
 
         return output
 
