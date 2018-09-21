@@ -5,14 +5,18 @@ This repo implement the code for video captioning, based on the paper [Joint Loc
 
 ## Requirements
 
-Python 2.7
+- Python 2.7
+- PyTorch 0.4.0
 
-PyTorch 0.4.0
+python packages
+- h5py
+- json
+- numpy
 
 
 ## Pretrained models
 
-Will be updated later.
+...
 
 ## Dataset
 
@@ -39,6 +43,9 @@ data/
 
 ## Training
 
+You can input various argument options that are not listed below.
+If you want to use another options, see the argument part in each file.
+
 ### 1. Preprocessing
 
 Before training the model, you need to preprocess the dataset.
@@ -54,7 +61,7 @@ The second is the dataset preprocessing used to train the sentence generator and
 ### 2. Training for attribute detector
 
 ```
-python run_detector.py
+python run_detector.py --file-name {output file name}
 ```
 
 ### 3. Training for sentence generator
@@ -62,7 +69,7 @@ python run_detector.py
 Use the weight of the attribute detector trained in the previous step.
 
 ```
-python run_sent_gen.py --resume-att {attribute detector weight file}
+python run_sent_gen.py --file-name {output file name} --resume-att {attribute detector weight file}
 ```
 
 ### 4. Training for dense video captioning
@@ -72,3 +79,59 @@ Use the weight of the attribute detector and sentence generator trained in the p
 ```
 python run_dvc.py --file-name {output file name} --resume-att {attribute detector weight file} --resume-sg {sentence generator weight file}
 ```
+
+## For another dataset
+
+### MSR-VTT dataset
+
+1. Prepare data files
+
+Download the dataset from [MSRVTT homepage](ms-multimedia-challenge.com/2016/dataset) and prepare features from MSRVTT video set using C3D model
+
+Features file type is hdf5 and contain video name, feature vector pairs as follows.
+
+```
+features = h5py.File('features.hdf5', 'r')
+
+# video name : video0
+feat = features['video0'].value
+```
+
+Data files are organized as follows.
+
+```
+data/
+-- MSRVTT/
+---- videodatainfo.json
+---- msrvtt_features.hdf5
+```
+
+2. Preprocessing
+
+Preprocess dataset.
+
+```
+python prepro_msrvtt.py
+```
+
+3. Training
+
+Training the attribute detector model.
+
+```
+python run_detector.py --root data/MSRVTT --file-name {output file name} --feature-dim {MSR-VTT feature dimension} --num-class 20
+```
+
+And training the sentence generator model using trained attribute detector model.
+
+```
+python run_sg_msrvtt.py --file-name {output file name} --resume-att {attribute detector weight file} --feature-dim {MSR-VTT feature dimension}
+```
+
+If you want to use reinforcement learning (Self-Critical) additionally, input rl-flag option.
+
+```
+python run_sg_msrvtt.py --file-name {output file name} --resume-att {attribute detector weight file} --resume-sg {sentence generator weight file above} --feature-dim {MSR-VTT feature dimension} --rl-flag
+```
+
+For each epoch, automatically evaluate metric with (current) trained model for validation set.

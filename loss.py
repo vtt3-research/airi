@@ -8,6 +8,24 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
+class SelfCritLoss(nn.Module):
+
+    def __init__(self):
+        super(SelfCritLoss, self).__init__()
+
+    def forward(self, sample_logprobs, gen_result, self_reward):
+
+        # self-critical reward loss
+        sample_logprobs = sample_logprobs.contiguous().view(-1)
+        self_reward = self_reward.contiguous().view(-1)
+        mask = (gen_result > 0).float()
+        mask = torch.cat([mask.new(mask.shape[0], 1).fill_(1), mask[:, :-1]], 1).view(-1)
+        loss = - sample_logprobs * self_reward * mask
+        loss = torch.sum(loss) / torch.sum(mask)
+
+        return loss
+
+
 class DVCLoss(nn.Module):
 
     def __init__(self, alpha=0.5, beta=10.0, alpha1=0.1, alpha2=0.1,
