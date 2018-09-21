@@ -37,30 +37,36 @@ class C3D(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-
+        # input shape : (batch size, ch=3, num frames=16, h=112, w=112)
         h = self.relu(self.conv1(x))
         h = self.pool1(h)
+        # output shape : (batch size, 64, 16, 56, 56)
 
         h = self.relu(self.conv2(h))
         h = self.pool2(h)
+        # output shape : (batch size, 128, 8, 28, 28)
 
         h = self.relu(self.conv3a(h))
         h = self.relu(self.conv3b(h))
         h = self.pool3(h)
+        # output shape : (batch size, 256, 4, 14, 14)
 
         h = self.relu(self.conv4a(h))
         h = self.relu(self.conv4b(h))
         h = self.pool4(h)
+        # output shape : (batch size, 512, 2, 7, 7)
 
         h = self.relu(self.conv5a(h))
         h = self.relu(self.conv5b(h))
         h = self.pool5(h)
+        # output shape : (batch size, 512, 1, 4, 4)
 
         h = h.view(-1, 8192)
         h = self.relu(self.fc6(h))
         h = self.dropout(h)
         h = self.relu(self.fc7(h))
         h = self.dropout(h)
+        # output shape : (batch size, 4096)
 
         logits = self.fc8(h)
         probs = self.softmax(logits)
