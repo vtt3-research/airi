@@ -247,7 +247,6 @@ def train(train_loader, model_att, model_sg, criterion, optimizer, epoch):
         # Compute loss
         loss = criterion(output.view(-1, output.shape[2]),
                          target[:, 1:].contiguous().view(-1))
-
         losses += loss.item()
 
         # Compute Gradient

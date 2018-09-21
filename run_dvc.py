@@ -151,7 +151,7 @@ def main():
         model_sg = model_sg.cuda()
 
     # Define loss function and optimizer
-    criterion = DVCLoss(args.scale_ratios, alpha=args.alpha, beta=args.beta,
+    criterion = DVCLoss(alpha=args.alpha, beta=args.beta,
                         alpha1=args.alpha1, alpha2=args.alpha2,
                         lambda1=args.lambda1, lambda2=args.lambda2,
                         use_gpu=args.use_gpu)
@@ -331,6 +331,7 @@ def train(train_loader, model_att, model_tep, model_sg, criterion, optimizer, ep
                                                      meteor_weight=args.meteor_weight,
                                                      cider_weight=args.cider_weight,
                                                      bleu_weight=args.bleu_weight)
+
             sent_reward = expand_reward(t_box.shape[0], pos_ids, sent_reward)
             sent_reward = torch.from_numpy(sent_reward).float()
             self_reward = torch.from_numpy(self_reward).float()
