@@ -151,7 +151,7 @@ def main():
         model_sg = model_sg.cuda()
 
     # Define loss function and optimizer
-    criterion = DVCLoss(args.scale_ratios, alpha=args.alpha, beta=args.beta,
+    criterion = DVCLoss(alpha=args.alpha, beta=args.beta,
                         alpha1=args.alpha1, alpha2=args.alpha2,
                         lambda1=args.lambda1, lambda2=args.lambda2,
                         use_gpu=args.use_gpu)
@@ -331,6 +331,7 @@ def train(train_loader, model_att, model_tep, model_sg, criterion, optimizer, ep
                                                      meteor_weight=args.meteor_weight,
                                                      cider_weight=args.cider_weight,
                                                      bleu_weight=args.bleu_weight)
+
             sent_reward = expand_reward(t_box.shape[0], pos_ids, sent_reward)
             sent_reward = torch.from_numpy(sent_reward).float()
             self_reward = torch.from_numpy(self_reward).float()
@@ -419,8 +420,7 @@ def validate(val_loader, model_att, model_tep, model_sg):
             if args.use_gpu:
                 pos_feats = pos_feats.cuda()
             pos_feats = Variable(pos_feats)
-            with torch.no_grad():
-                att = model_att(pos_feats)
+            att = model_att(pos_feats)
             att = Variable(att)
             gen_result, _ = model_sg.sample(pos_feats, att, greedy=True)
 
@@ -532,12 +532,15 @@ def evaluate_gt_proposal(val_loader, model_att, model_tep, model_sg, idx_to_word
 
 
 def save_checkpoint(state, is_best, epoch, filename='checkpoint', save_every=False):
+    if not os.path.isdir('./models'):
+        os.makedirs('./models')
     if save_every:
-        torch.save(state, '{}_epoch{}.pth.tar'.format(filename, epoch))
+        torch.save(state, './models/{}_epoch{}.pth.tar'.format(filename, epoch))
     else:
-        torch.save(state, '{}.pth.tar'.format(filename))
+        torch.save(state, './models/{}.pth.tar'.format(filename))
         if is_best:
-            shutil.copyfile('{}.pth.tar'.format(filename), '{}_best.pth.tar'.format(filename))
+            shutil.copyfile('./models/{}.pth.tar'.format(filename),
+                            './models/{}_best.pth.tar'.format(filename))
 
 
 if __name__ == '__main__':

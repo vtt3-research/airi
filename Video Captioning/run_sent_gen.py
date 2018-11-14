@@ -247,7 +247,6 @@ def train(train_loader, model_att, model_sg, criterion, optimizer, epoch):
         # Compute loss
         loss = criterion(output.view(-1, output.shape[2]),
                          target[:, 1:].contiguous().view(-1))
-
         losses += loss.item()
 
         # Compute Gradient
@@ -377,12 +376,15 @@ def evaluate_gt(val_loader, model_att, model_sg, criterion, idx_to_word, epoch=0
 
 
 def save_checkpoint(state, is_best, epoch, filename='checkpoint', save_every=False):
+    if not os.path.isdir('./models'):
+        os.makedirs('./models')
     if save_every:
-        torch.save(state, '{}_epoch{}.pth.tar'.format(filename, epoch))
+        torch.save(state, './models/{}_epoch{}.pth.tar'.format(filename, epoch))
     else:
-        torch.save(state, '{}.pth.tar'.format(filename))
+        torch.save(state, './models/{}.pth.tar'.format(filename))
         if is_best:
-            shutil.copyfile('{}.pth.tar'.format(filename), '{}_best.pth.tar'.format(filename))
+            shutil.copyfile('./models/{}.pth.tar'.format(filename),
+                            './models/{}_best.pth.tar'.format(filename))
 
 
 if __name__ == '__main__':

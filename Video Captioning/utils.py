@@ -132,7 +132,7 @@ def get_gt_proposal(feats, des, temporal_dim, targets,
                     scale_ratios=np.asarray([1, 1.25, 1.5], dtype=np.float32),
                     use_gpu=True):
     if targets.size(0) > 1:
-        raise ("batch size must be set as 1")
+        raise Exception("batch size must be set as 1")
 
     # Tensor to numpy
     targets = targets.data.cpu().numpy()

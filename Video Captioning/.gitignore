@@ -1,7 +1,9 @@
 .idea
 data
 log
+logs
 models
 output
 
+temp*.py
 *.pyc

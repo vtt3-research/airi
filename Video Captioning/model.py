@@ -118,12 +118,20 @@ class DVCTEP(nn.Module):
         des = torch.cat([o for o in des], 1)
         cls = torch.cat([o for o in cls], 1)
 
-        output = (
-            loc.view(loc.size(0), -1, 2),
-            des.view(des.size(0), -1, 1),
-            cls.view(cls.size(0), -1, 2),
-            temporal_dims
-        )
+        if self.training:
+            output = (
+                loc.view(loc.size(0), -1, 2),
+                des.view(des.size(0), -1, 1),
+                cls.view(cls.size(0), -1, 2),
+                temporal_dims
+            )
+        else:
+            output = (
+                loc.view(loc.size(0), -1, 2),
+                des.view(des.size(0), -1, 1),
+                F.softmax(cls.view(cls.size(0), -1, 2), dim=2),
+                temporal_dims
+            )
 
         return output
 
@@ -161,18 +169,22 @@ class DVCSG(nn.Module):
         outputs = []
         output_preds = []
 
+        # hidden/cell state initialize
         h_t = Variable(torch.zeros(input_feats.size(0), self.embedding_dim).float())
         c_t = Variable(torch.zeros(input_feats.size(0), self.embedding_dim).float())
         if self.use_gpu:
             h_t = h_t.cuda()
             c_t = c_t.cuda()
 
+        # 1st LSTM
         att = self.attribute_emb(input_atts)
         h_t, c_t = self.lstm(att, (h_t, c_t))
 
+        # 2nd LSTM
         feat = self.feature_emb(input_feats)
         h_t, c_t = self.lstm(feat, (h_t, c_t))
 
+        # 3rd ~ last LSTM
         for i in range(self.lstm_length-1):
             if self.training:
                 it = input_sents[:, i]
@@ -185,9 +197,10 @@ class DVCSG(nn.Module):
             word_vec = self.word_emb(it)
             h_t, c_t = self.lstm(word_vec, (h_t, c_t))
             predict = self.prob_layer(h_t)
-            _, gen_word = torch.max(F.log_softmax(predict, dim=1).data, 1)
+            _, gen_word = torch.max(F.log_softmax(predict, dim=1).data, 1)  # Greedy sampling
             gen_word = gen_word.view(-1).long()
 
+            # Check finished sentence generation for all batch
             if i >= 1 and torch.sum(it) == 0:
                 for j in range(i, self.lstm_length-1):
                     if self.use_gpu:
@@ -222,16 +235,16 @@ class DVCSG(nn.Module):
         h_t, c_t = self.lstm(feat, (h_t, c_t))
 
         for i in range(self.lstm_length):
-            if i == 0:
+            if i == 0:  # Generate start token
                 it = torch.ones(input_feats.size(0)).long()
                 if self.use_gpu:
                     it = it.cuda()
-            elif greedy:
+            elif greedy:  # Greedy sampling
                 sample_logprobs, it = torch.max(logprobs.data, 1)
                 if self.use_gpu:
                     it = it.cuda()
                 it = it.view(-1).long()
-            else:
+            else:  # MC sampling
                 prob_prev = torch.exp(logprobs.data)
                 it = torch.multinomial(prob_prev, 1)
                 if self.use_gpu:
@@ -248,8 +261,9 @@ class DVCSG(nn.Module):
             word_vec = self.word_emb(it)
             h_t, c_t = self.lstm(word_vec, (h_t, c_t))
             predict = self.prob_layer(h_t)
-
             logprobs = F.log_softmax(predict, dim=1)
+
+            # Check finished sentence generation for all batch
             if torch.sum(unfinished) == 0:
                 for j in range(i, self.lstm_length):
                     if self.use_gpu:
@@ -268,10 +282,12 @@ class DVCSG(nn.Module):
         return outputs, output_logprobs
 
 
+# Build attribute detector model
 def build_att_model(in_c=500, num_class=200):
     return AttDetector(in_c, num_class)
 
 
+# Build sentence generator model with attribute detector
 def build_sg_model(in_c=500, num_class=200, voca_size=11122,
                    caps_length=32, embedding_dim=1024,
                    hidden_dim=1024, use_gpu=False):
@@ -280,6 +296,7 @@ def build_sg_model(in_c=500, num_class=200, voca_size=11122,
              embedding_dim, hidden_dim, use_gpu)
 
 
+# Build total model contained temporal event proposal, sentence generator and attribute detector
 def build_models(in_c=500, num_class=200, voca_size=11122,
                  caps_length=32, embedding_dim=1024,
                  hidden_dim=1024, use_gpu=False):

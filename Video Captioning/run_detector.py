@@ -30,7 +30,7 @@ parser.add_argument('--file-name', type=str, default='att01')
 parser.add_argument('--resume', type=str, default=None)
 parser.add_argument('-j', '--workers', type=int, default=4)
 parser.add_argument('--start-epoch', type=int, default=0)
-parser.add_argument('--epochs', type=int, default=10)
+parser.add_argument('--epochs', type=int, default=30)
 parser.add_argument('--batch-size', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.0001)
 parser.add_argument('--momentum', type=float, default=0.9)
@@ -178,7 +178,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # Compute loss
         loss = criterion(output, target)
-
         losses += loss.item()
 
         # Compute Gradient
@@ -227,12 +226,15 @@ def validate(val_loader, model):
 
 
 def save_checkpoint(state, is_best, epoch, filename='checkpoint', save_every=False):
+    if not os.path.isdir('./models'):
+        os.makedirs('./models')
     if save_every:
-        torch.save(state, '{}_epoch{}.pth.tar'.format(filename, epoch))
+        torch.save(state, './models/{}_epoch{}.pth.tar'.format(filename, epoch))
     else:
-        torch.save(state, '{}.pth.tar'.format(filename))
+        torch.save(state, './models/{}.pth.tar'.format(filename))
         if is_best:
-            shutil.copyfile('{}.pth.tar'.format(filename), '{}_best.pth.tar'.format(filename))
+            shutil.copyfile('./models/{}.pth.tar'.format(filename),
+                            './models/{}_best.pth.tar'.format(filename))
 
 
 if __name__ == '__main__':
