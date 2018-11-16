@@ -1,6 +1,6 @@
 # Video Captioning
 
-This repo implement the code for video captioning, based on the paper [Joint Localizing and Describing Events for Dense Video Captioning](https://arxiv.org/abs/1804.08274) (CVPR 2018).
+This repo implements the code for video captioning, based on the paper [Joint Localizing and Describing Events for Dense Video Captioning](https://arxiv.org/abs/1804.08274) (CVPR 2018).
 
 
 ## Requirements
@@ -44,7 +44,7 @@ data/
 ## Training
 
 You can input various argument options that are not listed below.
-If you want to use another options, see the argument part in each file.
+If you want to use other options, see the argument part in each file.
 
 ### 1. Preprocessing
 
@@ -80,14 +80,50 @@ Use the weight of the attribute detector and sentence generator trained in the p
 python run_dvc.py --file-name {output file name} --resume-att {attribute detector weight file} --resume-sg {sentence generator weight file}
 ```
 
+If you want to learn more with reinforcement learning (Self-Critical), you can do the following additional tasks.
+
+```
+python run_dvc.py --file-name {output file name} --resume-att {attribute detector weight file} --resume-sg {sentence generator weight file} --resume-dvc-xe {dvc weight file above} --rl-flag
+```
+
+(Experimental) A lot of epochs with reinforcement learning improves the quantitative evaluation(METEOR, CIDEr, etc.), but the qualitative evaluation becomes worse.
+
+
+## Video Testing
+
+You can test your videos with a learned model.
+To test the video, we need a model that extracts features from the video.
+We copied the C3D model of [Davide Abati’s github](https://github.com/DavideA/c3d-pytorch) and made some modifications to this model.
+Download the pretrained C3D weight file as described in the [Davide Abati’s github](https://github.com/DavideA/c3d-pytorch).
+We need to also ActivityNet PCA file to reduce video-feature dimension.
+Click [PCA_activitynet_v1-3](http://activity-net.org/challenges/2016/download.html#c3d) and download a file.
+Finally, move the files to `data/` folder.
+
+```
+data/
+-- c3d.pickle
+-- PCA_activitynet_v1-3.hdf5
+```
+
+```
+python run_video.py --video-root {your video root folder} --resume-att {attribute detector weight file} --resume-dvc {dvc weight file}
+```
+
+Run testing above, and enter the video filename in the video root folder.
+
+
 ## For another dataset
 
 ### MSR-VTT dataset
 
+MSR-VTT is one of the popular video caption datasets.
+However, MSR-VTT only has captions for the full length of the video.
+Therefore, it is not necessary to extract the event proposal.
+So we learn the sentence generation model without using the event extraction model.
+
 1. Prepare data files
 
 Download the dataset from [MSRVTT homepage](ms-multimedia-challenge.com/2016/dataset) and prepare features from MSRVTT video set using C3D model
-
 Features file type is hdf5 and contain video name, feature vector pairs as follows.
 
 ```
@@ -96,6 +132,9 @@ features = h5py.File('features.hdf5', 'r')
 # video name : video0
 feat = features['video0'].value
 ```
+
+Or, you can use the file I created [here](https://drive.google.com/file/d/1vm_Lh6RF1qgGOxSUyTb0p0ajJVqVKR2b/view?usp=sharing).
+This file uses the C3D model in the repository to extract features for each video, calculate and store the average.
 
 Data files are organized as follows.
 
@@ -134,4 +173,4 @@ If you want to use reinforcement learning (Self-Critical) additionally, input rl
 python run_sg_msrvtt.py --file-name {output file name} --resume-att {attribute detector weight file} --resume-sg {sentence generator weight file above} --feature-dim {MSR-VTT feature dimension} --rl-flag
 ```
 
-For each epoch, automatically evaluate metric with (current) trained model for validation set.
+For each epoch, automatically evaluate metric with (current) trained model for the validation set.
