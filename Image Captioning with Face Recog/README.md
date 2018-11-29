@@ -41,7 +41,7 @@ Enter the test image file (path+name).
 
 ## Results
 
-Ross is istting on the sofa. -> Chandler is sitting on the sofa.
+Ross is sitting on the sofa. -> Chandler is sitting on the sofa.
 
 ![alt text](jpg/result1.png "test image")
 
