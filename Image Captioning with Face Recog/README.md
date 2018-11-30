@@ -25,10 +25,13 @@ You must use other face recognition modules or open APIs and modify `vtt_face_re
 다만, 여기서는 [코난테크놀로지](https://github.com/vtt3-research/konantech)에서 제공하는 '프렌즈' 시즌의 메타데이터를 가져와 데이터셋을 가공하여 사용합니다.
 가공된 데이터파일은 [제 구글드라이브](https://drive.google.com/file/d/1g3hEy7miyPBJTaC1J7lrrQzWbzWcmEwI/view?usp=sharing)에서 다운로드할 수 있습니다.
 
+데이터셋은 프렌즈 시즌1(EP01~EP23)이며, training set은 EP01~22, test set은 EP23으로 분리하여 사용했습니다.
+
 You do not need a dataset because you can use the pre-processed dataset and the learned model from my ['image captioning' repository](https://github.com/vtt3-research/airi/tree/master/Top-Down%20Attention%20for%20Image%20Captioning).
 But I use the ‘Friends’(sitcom) season1 meta data provided by [Konan Tech.](https://github.com/vtt3-research/konantech).
 The processed data file can be downloaded [here](https://drive.google.com/file/d/1g3hEy7miyPBJTaC1J7lrrQzWbzWcmEwI/view?usp=sharing).
 
+Dataset include training set (EP01~22) and test set (EP23) for ‘Friends’(sitcom) season1.
 
 ## Test
 
@@ -41,14 +44,15 @@ Enter the test image file (path+name).
 
 ## Results
 
-Ross is sitting on the sofa. -> Chandler is sitting on the sofa.
-
 ![alt text](jpg/result1.png "test image")
-
-Chandler is talking to phoebe. -> Monica is talking to phoebe.
 
 ![alt text](jpg/result2.png "test image")
 
-Chandler is holding something. -> Joey is holding something.
-
 ![alt text](jpg/result3.png "test image")
+
+
+### Evaluation
+|                   | BLEU-1 | BLEU-4 | CIDEr | METEOR |
+|-------------------|:-------------------:|:------------------------:|:---------------------:|:---------------------------:|
+| Implementation (original captioning) | 39.60  | 12.60 | 50.50 | 19.00 |
+| Implementation (using face recognition) | 40.43  | 13.13 | 55.58 | 20.06 |
