@@ -88,6 +88,20 @@ python run_dvc.py --file-name {output file name} --resume-att {attribute detecto
 
 (Experimental) A lot of epochs with reinforcement learning improves the quantitative evaluation(METEOR, CIDEr, etc.), but the qualitative evaluation becomes worse.
 
+## Result
+
+Not best score...
+
+![alt text](jpg/result1.png "test image")
+
+![alt text](jpg/result2.png "test image")
+
+### Evaluation
+
+|                   | BLEU-4 | CIDEr | METEOR |
+|-------------------|:-------------------:|:------------------------:|:---------------------:|
+| Implementation | 1.32  | 29.22 | 9.37 |
+
 
 ## Video Testing
 
@@ -174,3 +188,17 @@ python run_sg_msrvtt.py --file-name {output file name} --resume-att {attribute d
 ```
 
 For each epoch, automatically evaluate metric with (current) trained model for the validation set.
+
+4. Result
+
+Not best score...
+
+![alt text](jpg/result3.png "test image")
+
+![alt text](jpg/result4.png "test image")
+
+|                   | BLEU-4 | CIDEr | METEOR |
+|-------------------|:-------------------:|:------------------------:|:---------------------:|
+| Implementation | 34.56  | 33.37 | 24.56 |
+
+## New Model
