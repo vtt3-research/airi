@@ -2,6 +2,7 @@
 
 This repo implements the code for video captioning, based on the paper [Joint Localizing and Describing Events for Dense Video Captioning](https://arxiv.org/abs/1804.08274) (CVPR 2018).
 
+* Upload new model (modified original model)
 
 ## Requirements
 
@@ -206,3 +207,26 @@ Not best score...
 | Implementation | 34.56  | 33.37 | 24.56 |
 
 ## New Model
+
+### Framework
+
+![alt text](jpg/framework.png "test image")
+
+### Test
+
+Download pre-trained data from [here](https://drive.google.com/drive/folders/1iPTidKqO8LG0-3h1HYX1jK5wo8ylrzeC?usp=sharing) and move files as follow.
+This file trained with ActivityNet Captions training set and MSR-VTT Dataset.
+
+
+```
+data/
+-- actnet_msrvtt/
+---- word_to_idx.json
+models/
+-- att_model.pth.tar
+-- c3d.pickle
+-- sg_model.pth.tar
+-- tep_model.pth.tar
+```
+
+Run `new_test.py` and enter the video file path and name.
