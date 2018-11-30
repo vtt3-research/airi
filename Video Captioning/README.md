@@ -90,6 +90,8 @@ python run_dvc.py --file-name {output file name} --resume-att {attribute detecto
 
 ## Result
 
+For validation set, qualitative and quantitative evaluation.
+
 Not best score...
 
 ![alt text](jpg/result1.png "test image")
@@ -190,6 +192,8 @@ python run_sg_msrvtt.py --file-name {output file name} --resume-att {attribute d
 For each epoch, automatically evaluate metric with (current) trained model for the validation set.
 
 4. Result
+
+For validation set, qualitative and quantitative evaluation.
 
 Not best score...
 
